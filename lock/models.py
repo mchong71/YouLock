@@ -9,18 +9,17 @@ class User(models.Model):
 	last_name = models.CharField(max_length=50)
 	
 	def __unicode__(self):
-		return u'%s %s %s' % (self.uid, self.first_name, self.last_name)
+		return u'%s %s %s %s' % (self.uid, self.username, self.first_name, self.last_name)
 
-class Status(models.Model):
+class Rack(models.Model):
 	'''shows the status of the user as well as any associated ids'''
+	status =  models.CharField(max_length=10)
 	uid = models.CharField(max_length=50, unique=True)
-	assoc_uid = models.CharField(max_length=100)
-	status =  models.BooleanField(default=0)
 
 	def __unicode__(self):
-		return u'%s %s %s' % (self.uid, self.assoc_uid, self.status)
+		return u'%s %s %s' % (self.status, self.uid)
 
-class Details(models.Model):
+class Share(models.Model):
 	'''only has entries if there is a shared id'''
 	assoc_uid = models.CharField(max_length=100)
 	uid = models.CharField(max_length=50)
