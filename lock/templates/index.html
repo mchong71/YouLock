@@ -6,41 +6,81 @@
 	<!-- Optional theme -->
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
 
-	<!-- Latest compiled and minified JavaScript -->
-	<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
 
 	 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery.js"></script>
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript" src="../static/script/main.js"></script>
+
+	<link rel="stylesheet" href="./static/css/stylesheet.css">
+
     <!-- Include all compiled plugins (below), or include individual files as needed -->
+
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+	<!-- <link href="assets/css/bootstrap-responsive.css" rel="stylesheet"> -->
 </head>
 <body>
 <div class="container">
 	<div class="header">
-		<ul class="nav nav-pills pull-right">
-			<li class="active"><a href="#">Home</a></li>
+		<ul class="nav nav-pills pull-right" style="padding-top: 15px">
+			<li class="active"><a href="#">{{ username }}</a></li>
 			<li><a href="/logout/">Sign out</a></li>
-			<li><a href="#">Contact</a></li>
 		</ul>
-		<h3 class="text-muted">You Lock Profile for: {{ username }}</h3>
-	<div>
- 	<br></br>	
-	<form class="form-horizontal" action="/share/" method="post">{% csrf_token %}
-		{{ form.as_p }}
-		<div class="form-group">
-			<label class="sr-only" for="shareID">SharedID</label>
-			<input type="text" name="shareID" class="form-control" placeholder="User ID">
+		<img src="../static/img/logo.png" style="margin-left: -40px">
+	</div>
+	<div class="shareBox">
+		<br>
+		<div class="modify">
+			<h3>Add user to share with</h3>
+			<form class="form-horizontal" action="/share/" method="post" style="margin-top: -30px">{% csrf_token %}
+				{{ form.as_p }}
+				<br></br>
+				<div class="form-group" style="padding-left: 15px">
+					<label class="sr-only" for="shareID">SharedID</label>
+					<input type="text" name="shareID" class="form-control" placeholder="User ID">
+				</div>
+				<div class="form-group" style="padding-left: 15px">
+					<label class="sr-only" for="time">Number of Uses</label>
+					<input type="text" name="time" class="form-control" placeholder="Number of Uses">
+				</div>
+				<label for="mySubmit" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Add User</label>
+    			<input id="mySubmit" type="submit" value="Go" class="hidden" />
+			</form>  
 		</div>
-		<div class="form-group">
-			<label class="sr-only" for="time">Number of Uses</label>
-			<input type="text" name="time" class="form-control" placeholder="Number of Uses">
-		<div>
-	  	
-	  	<br>
+		<br></br>
+		<div class="details">
+			{% if givenAccess %}
+			<h4>People I've shared with: </h4>
+			<form class="form-horizontal" action="/delete/" method="post">
+				<ul style="list-style-type: none; margin-left: -40px">
+					{% for user in givenAccess %}
+					<li>
+						{{ user.username }}
+						<input type="hidden" name="username" value="{{ user.username }}"/>
+					    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
+    					<input id="delete" type="submit" value="Delete" class="hidden" />  
+					</li>
+					{% endfor %}
+				</ul>
+			</form>	
+			{% endif %}
+		</div>
+	</div>
 
-		<input class="btn btn-success" type="submit" value="Submit">
-	</form>  
+	<br></br>
 
+	<div class="row">
+		<span class="span3" style="position: absolute; margin-left: 15px">
+			<h4>Closest Locations</h4>
+		</span>
+		<span class="span4" style="width: 500px; margin-left: 250px">
+			<iframe width="500" height="700" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.ca/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=bixi&amp;aq=&amp;sll=43.655764,-79.37974&amp;sspn=0.057565,0.132093&amp;gl=ca&amp;ie=UTF8&amp;hq=bixi&amp;hnear=&amp;t=m&amp;ll=43.655764,-79.37974&amp;spn=0.057565,0.132093&amp;output=embed"></iframe><br />
+		</span>
 
+	</div>
 </div> <!-- /container -->
      
 

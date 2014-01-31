@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     url(r'^logout/$', 'lock.views.logout', name='logout'),
     url(r'^authenticate/$', 'lock.views.authenticate'),
     url(r'^share/$', 'lock.views.share', name='share'),
+    url(r'^delete/$', 'lock.views.delete', name='delete'),
     url(r'^listen/$', 'lock.views.listen', name='listen'),
     url(r'^admin/', include(admin.site.urls)),
 )
