@@ -76,7 +76,7 @@ def listen(request):
 				print (len(line))
 				break
 		except Exception, e:
-			pass
+			print e
 		
 
 	ser.close()
