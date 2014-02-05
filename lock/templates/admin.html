@@ -1,0 +1,62 @@
+<html style="background-color:#eee;">
+<head>
+	<link type="text/css" rel="stylesheet" href="../static/css/loader.css" />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+		<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
+
+
+	 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript" src="../static/script/main.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+	<!-- <link href="assets/css/bootstrap-responsive.css" rel="stylesheet"> -->
+</head>
+
+<body>
+<div class="container">
+	<div class="header">
+		<ul class="nav nav-pills pull-right" style="padding-top: 15px">
+			<li class="active"><a href="#">{{ username }}</a></li>
+			<li><a href="/logout/">Sign out</a></li>
+		</ul>
+		<img src="../static/img/logo.png" style="margin-left: -40px">
+	</div>
+	<div class="aligncenter">
+		<div id="floatingBarsG">
+			<div class="blockG" id="rotateG_01"></div>
+			<div class="blockG" id="rotateG_02"></div>
+			<div class="blockG" id="rotateG_03"></div>
+			<div class="blockG" id="rotateG_04"></div>
+			<div class="blockG" id="rotateG_05"></div>
+			<div class="blockG" id="rotateG_06"></div>
+			<div class="blockG" id="rotateG_07"></div>
+			<div class="blockG" id="rotateG_08"></div>
+		</div>		
+		<div class="toggle" style="margin-top: 20px; margin-left: -20px;">
+				<form class="form-horizontal" action="/listen/" method="post">
+					<input type="hidden" name="toggle" value="start"/>
+					 <label for="start" class="btn btn-success btn-lg"><i class="glyphicon glyphicon-ok"></i> Start Server</label>
+					<input id="start" type="submit" value="Start" class="hidden" />  				
+				</form>	
+			<form class="form-horizontal" action="/listen/" method="post">
+					<input type="hidden" name="toggle" value="stop"/>
+				    <label for="stop" class="btn btn-danger btn-lg"><i class="glyphicon glyphicon-remove"></i> Stop Server</label>
+					<input id="stop" type="submit" value="Stop" class="hidden" />  
+			</form>
+		</div>	
+	</div>
+
+</div>
+</body>
+</html>

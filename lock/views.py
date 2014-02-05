@@ -4,14 +4,25 @@ from django.template import Context, loader, RequestContext
 import json as simplejson
 from django.core import serializers
 
+import time
 from lock import models as l
 
 from serial import Serial
 
+ser = Serial()
+SERVER_STARTED = False
+
 def index(request):
 
 	if request.session['0'] == 'admin':
-		return HttpResponseRedirect('/listen/')
+		context = Context({
+				'username': request.session['0'],
+			})
+		template = loader.get_template('admin.html')
+		# print "user"
+	 	# print len(givenAccess)
+		# Context is a normal Python dictionary whose keys can be accessed in the template index.html
+		return HttpResponse(template.render(context))
 	else:
 		users = l.User.objects.raw("select u.id, u.uid, u.first_name, s.status from lock_user u join lock_status s on s.uid = u.uid")
 		count = l.User.objects.raw("select count(id) as count, id from lock_user where uid in (select s.assoc_uid from lock_user u join lock_share s on s.uid = u.uid where u.username = '" + request.session['0'] + "')")
@@ -53,6 +64,15 @@ def share(request):
 
 	return HttpResponseRedirect('/')
 
+def toggle(request):
+
+
+	context = Context({
+				'username': request.session['0'],
+			})
+	template = loader.get_template('admin.html')
+	return HttpResponse(template.render(context))
+
 def delete(request):
 	print "deleteing"
 	if request.method == 'POST':
@@ -64,60 +84,63 @@ def delete(request):
 
 def listen(request):
 	status = ''
-	ser = Serial('/dev/tty.usbmodem411', 115200, timeout=1)
-	print("connected to: " + ser.portstr)
-
-	while True:
-	# Read a line and convert it from b'xxx\r\n' to xxx
-		try:
-			line = ser.readline().decode('utf-8')[:-2]
-			if line and line[0:5] != 'DEBUG' and len(line) == 19:
-				print(line)
-				print (len(line))
-				break
-		except Exception, e:
-			print e
-		
-
-	ser.close()
- 
-	id_status = l.User.objects.raw("select * from lock_user where uid = '" + line + "'")
-
-	if len(list(id_status)) == 0:
-		line = '*'
-	valid = '2'
-	'''Is a valid user'''
-	rack_status = l.Rack.objects.raw("select * from lock_rack")
-	if len(list(rack_status)) == 0:
-		'''no one is assigned to this lock'''
-		print("rack is locked by: " + line)
-		R = l.Rack(status="occupied", uid=line)
-		R.save()
-		valid = '0'
-	else:
-		'''someone is assigned to the lock verify based on shared and current id's'''
-		rack_status = l.Rack.objects.raw("select id, uid from lock_rack")[0]
-		share_status = l.Share.objects.raw("select * from lock_share where assoc_uid = '" + line + "' and uid = '" + rack_status.uid + "'")
-		if rack_status.uid == line or len(list(share_status)) > 0:
-			if len(list(share_status)) > 0:
-				print("rack is unlocked by shared ID: " + line)
-			else:
-				print("rack is unlocked by ID: " + line)
-			'''correct uid is used to unlock delete any data on rack'''
-			print ("deleteing statuses from rack database")
-			l.Rack.objects.all().delete()
-			valid = '1'
+	SERVER_STARTED = False
+	if request.method == 'POST':
+		if request.POST.get('toggle') == 'start':
+			ser = Serial('/dev/tty.usbmodem411', 115200, timeout=1)
+			print("connected to: " + ser.portstr)
+			SERVER_STARTED = True
 		else:
-			print("invalid id card")
+			ser.close()
 
-	print valid
-	template = loader.get_template('index.html')
- 	
-	ser = Serial('/dev/tty.usbmodem411', 115200, timeout=1)
-	print("connected to: " + ser.portstr)
-	ser.write(valid)
+	while SERVER_STARTED:
+		while True:
+		# Read a line and convert it from b'xxx\r\n' to xxx
+			try:
+				line = ser.readline().decode('utf-8')[:-2]
+				if line and line[0:5] != 'DEBUG' and len(line) == 19:
+					print(line)
+					print (len(line))
+					break
+			except Exception, e:
+				print e
+			
+	 
+		id_status = l.User.objects.raw("select * from lock_user where uid = '" + line + "'")
 
-	ser.close()
+		if len(list(id_status)) == 0:
+			line = '*'
+		valid = '2'
+		'''Is a valid user'''
+		rack_status = l.Rack.objects.raw("select * from lock_rack")
+		if len(list(rack_status)) == 0:
+			'''no one is assigned to this lock'''
+			print("rack is locked by: " + line)
+			R = l.Rack(status="occupied", uid=line)
+			R.save()
+			valid = '0'
+		else:
+			'''someone is assigned to the lock verify based on shared and current id's'''
+			rack_status = l.Rack.objects.raw("select id, uid from lock_rack")[0]
+			share_status = l.Share.objects.raw("select * from lock_share where assoc_uid = '" + line + "' and uid = '" + rack_status.uid + "'")
+			if rack_status.uid == line or len(list(share_status)) > 0:
+				if len(list(share_status)) > 0:
+					print("rack is unlocked by shared ID: " + line)
+				else:
+					print("rack is unlocked by ID: " + line)
+				'''correct uid is used to unlock delete any data on rack'''
+				print ("deleteing statuses from rack database")
+				l.Rack.objects.all().delete()
+				valid = '1'
+			else:
+				print("invalid id card")
+
+		print valid
+		template = loader.get_template('index.html')
+	 	
+		# ser = Serial('/dev/tty.usbmodem411', 115200, timeout=1)
+		# print("connected to: " + ser.portstr)
+		ser.write(valid)
 
 	return HttpResponseRedirect('/listen/')
 
@@ -140,7 +163,14 @@ def authenticate(request):
 		print request.POST
 
 	if request.POST.get('username') == 'admin':
-		return HttpResponseRedirect('/listen/')
+		template = loader.get_template('admin.html')
+
+		# Context is a normal Python dictionary whose keys can be accessed in the template index.html
+		context = Context({
+		'username': request.POST.get('username')
+		})
+ 
+		return HttpResponse(template.render(context))
 	else:
 		return HttpResponseRedirect('/')
 def logout(request):
