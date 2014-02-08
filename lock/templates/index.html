@@ -26,6 +26,7 @@
 <div class="container">
 	<div class="header">
 		<ul class="nav nav-pills pull-right" style="padding-top: 15px">
+			<li class="{{ hasNotifications }}"><a href='#myModal' data-toggle="modal"><i class="glyphicon glyphicon-envelope" style="font-size: 1.5em"></i></a></li>
 			<li class="active"><a href="#">{{ username }}</a></li>
 			<li><a href="/logout/">Sign out</a></li>
 		</ul>
@@ -54,18 +55,80 @@
 		<div class="details">
 			{% if givenAccess %}
 			<h4>People I've shared with: </h4>
-			<form class="form-horizontal" action="/delete/" method="post">
-				<ul style="list-style-type: none; margin-left: -40px">
-					{% for user in givenAccess %}
-					<li>
-						{{ user.username }}
-						<input type="hidden" name="username" value="{{ user.username }}"/>
-					    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
-    					<input id="delete" type="submit" value="Delete" class="hidden" />  
-					</li>
-					{% endfor %}
-				</ul>
-			</form>	
+			<table class="table">
+					<thead>
+						<tr>
+							<th></th>
+							<th>User</th>
+							<th>Status</th>
+							<th>Usage Left</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for user in givenAccess %}
+						<tr>
+							<td>
+								<form class="form-horizontal" action="/delete/" method="post">
+									<input type="hidden" name="username" value="{{ user.username }}"/>
+								    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
+			    					<input id="delete" type="submit" value="Delete" class="hidden" /> 
+		    					</form>
+		    				</td>
+							<td>{{ user.username }}</td>
+							<td>{{ user.status }}</td>
+							<td>{{ user.time }}</td>
+<!-- 							<td>{{ user.status }}</td> -->
+							
+						</tr>
+						{% endfor %}	
+					</tbody>
+				<!-- <form class="form-horizontal" action="/delete/" method="post">
+					<ul style="list-style-type: none; margin-left: -40px">
+						{% for user in givenAccess %}
+						<li>
+							{{ user.username }}
+							<input type="hidden" name="username" value="{{ user.username }}"/>
+						    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
+	    					<input id="delete" type="submit" value="Delete" class="hidden" />  
+						</li>
+						{% endfor %}
+					</ul>
+				</form> -->
+			</table>
+			{% endif %}
+			{% if receievedAccess %}
+			<h4>People that have shared with me: </h4>
+			<table class="table">
+					<thead>
+						<tr>
+							<th>User</th>
+							<th>Status</th>
+							<th>Usage Left</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for user in receivedAccess %}
+						<tr>
+							<td>{{ user.username }}</td>
+							<td>**STATUS**</td>
+							<td>**USAGE**</td>
+<!-- 							<td>{{ user.status }}</td> -->
+						</tr>
+						{% endfor %}	
+					</tbody>
+				<!-- <form class="form-horizontal" action="/delete/" method="post">
+					<ul style="list-style-type: none; margin-left: -40px">
+						{% for user in givenAccess %}
+						<li>
+							{{ user.username }}
+							<input type="hidden" name="username" value="{{ user.username }}"/>
+						    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
+	    					<input id="delete" type="submit" value="Delete" class="hidden" />  
+						</li>
+						{% endfor %}
+					</ul>
+				</form> -->
+			</table>
 			{% endif %}
 		</div>
 	</div>
@@ -80,6 +143,28 @@
 			<iframe width="500" height="700" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.ca/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=bixi&amp;aq=&amp;sll=43.655764,-79.37974&amp;sspn=0.057565,0.132093&amp;gl=ca&amp;ie=UTF8&amp;hq=bixi&amp;hnear=&amp;t=m&amp;ll=43.655764,-79.37974&amp;spn=0.057565,0.132093&amp;output=embed"></iframe><br />
 		</span>
 
+	</div>
+
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	 <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	        <h4 class="modal-title" id="myModalLabel">Share Request</h4>
+	      </div>
+	      <div class="modal-body">
+	        The user {{ shareUser }} would like to share their ID with you. 
+	      </div>
+	      <form class="form-horizontal" action="/shareAccept/" method="post">
+		      <div class="modal-footer">
+		      	<input type="hidden" name="accept" value="true"/>
+		      	<label for="accept" class="btn btn-success">Accept</label>
+    			<input id="accept" type="submit" value="Accept" class="hidden" />  
+		        <button type="button" class="btn btn-danger">Reject</button>
+		      </div>
+		  </form>
+	    </div>
+	  </div>
 	</div>
 </div> <!-- /container -->
      

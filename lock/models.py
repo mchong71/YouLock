@@ -24,6 +24,7 @@ class Share(models.Model):
 	assoc_uid = models.CharField(max_length=100)
 	uid = models.CharField(max_length=50)
 	time = models.CharField(max_length=50)
+	status = models.CharField(max_length=10)
 
 	def __unicode__(self):
-		return u'%s %s %s' % (self.uid, self.assoc_uid, self.status)
+		return u'%s %s %s %s' % (self.uid, self.assoc_uid, self.status, self.share)

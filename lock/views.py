@@ -26,18 +26,34 @@ def index(request):
 	else:
 		users = l.User.objects.raw("select u.id, u.uid, u.first_name, s.status from lock_user u join lock_status s on s.uid = u.uid")
 		count = l.User.objects.raw("select count(id) as count, id from lock_user where uid in (select s.assoc_uid from lock_user u join lock_share s on s.uid = u.uid where u.username = '" + request.session['0'] + "')")
+		currUser = l.User.objects.raw("select * from lock_user where username = '" + request.session['0'] + "'")
+		
+		notifications = l.User.objects.raw("select * from lock_share where assoc_uid = '" + currUser[0].uid + "' and status = 'pending'")
+		shareID = l.User.objects.raw("select * from lock_user join lock_share on lock_user.uid = lock_share.uid where lock_share.assoc_uid = '" + currUser[0].uid + "'")
+		if len(list(notifications)) > 0:
+			hasNotifications = 'enabled'
+			shareUser = shareID[0].username
+		else:
+			hasNotifications = 'disabled'
+			shareUser = ''
+
 		if count[0].count > 0:
 			print len(list(count))
 			access = l.User.objects.raw("select id, first_name, last_name from lock_user where uid in (select s.assoc_uid from lock_user u join lock_share s on s.uid = u.uid where u.username = '" + request.session['0'] + "')")
-			givenAccess = l.User.objects.raw("select * from lock_user where uid = '" + access[0].uid + "'")
+			givenAccess = l.User.objects.raw("select lock_user.uid, lock_share.status, lock_share.time, lock_user.id from lock_user join lock_share on lock_user.uid = lock_share.assoc_uid where lock_share.assoc_uid = '" + access[0].uid + "'")
+			# status = l.User.objects.raw("select * from lock")
 			print (givenAccess)
 			context = Context({
 				'username': request.session['0'],
-				'givenAccess': givenAccess
+				'givenAccess': givenAccess,
+				'hasNotifications': hasNotifications,
+				'shareUser': shareUser
 			})
 		else:
 			context = Context({
 				'username': request.session['0'],
+				'hasNotifications': hasNotifications,
+				'shareUser': shareUser
 			})
 		template = loader.get_template('index.html')
 		# print "user"
@@ -59,7 +75,7 @@ def share(request):
 		userDetails = l.User.objects.raw("select * from lock_user where username = '" + username + "'")
 		assocDetails = l.User.objects.raw("select * from lock_user where username = '" + assocUser + "'")
 
-		S = l.Share(uid=userDetails[0].uid, assoc_uid=assocDetails[0].uid, time=time)
+		S = l.Share(uid=userDetails[0].uid, assoc_uid=assocDetails[0].uid, time=time, status='pending')
 		S.save()
 
 	return HttpResponseRedirect('/')
@@ -86,12 +102,13 @@ def listen(request):
 	status = ''
 	SERVER_STARTED = False
 	if request.method == 'POST':
+		ser = Serial('/dev/tty.usbmodem411', 115200, timeout=1)
 		if request.POST.get('toggle') == 'start':
-			ser = Serial('/dev/tty.usbmodem411', 115200, timeout=1)
 			print("connected to: " + ser.portstr)
 			SERVER_STARTED = True
 		else:
 			ser.close()
+			SERVER_STARTED = False
 
 	while SERVER_STARTED:
 		while True:
@@ -122,7 +139,7 @@ def listen(request):
 		else:
 			'''someone is assigned to the lock verify based on shared and current id's'''
 			rack_status = l.Rack.objects.raw("select id, uid from lock_rack")[0]
-			share_status = l.Share.objects.raw("select * from lock_share where assoc_uid = '" + line + "' and uid = '" + rack_status.uid + "'")
+			share_status = l.Share.objects.raw("select * from lock_share where (assoc_uid = '" + line + "' and uid = '" + rack_status.uid + "') or (assoc_uid = '" + rack_status.uid + "' and uid = '" + line + "') and status = 'shared'")
 			if rack_status.uid == line or len(list(share_status)) > 0:
 				if len(list(share_status)) > 0:
 					print("rack is unlocked by shared ID: " + line)
@@ -142,7 +159,16 @@ def listen(request):
 		# print("connected to: " + ser.portstr)
 		ser.write(valid)
 
-	return HttpResponseRedirect('/listen/')
+	if SERVER_STARTED == False:
+		context = Context({
+				'username': request.session['0'],
+			})
+		template = loader.get_template('admin.html')
+
+		return HttpResponse(template.render(context))
+	else:
+
+		return HttpResponseRedirect('/listen/')
 
 def login(request):
 
@@ -184,5 +210,15 @@ def logout(request):
 	})
  
 	return HttpResponse(template.render(context))
+
+def shareAccept(request):
+	if request.method == 'POST':
+		print request.POST
+		currUser = l.User.objects.raw("select * from lock_user where username = '" + request.session['0'] + "'")
+		l.Share.objects.filter(assoc_uid=currUser[0].uid).update(status=('shared'))
+		# query = l.User.objects.raw("update lock_share set status = 'shared' where assoc_uid = '" + currUser[0].uid + "'")
+
+
+	return HttpResponseRedirect('/')
 
 	
