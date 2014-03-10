@@ -114,50 +114,58 @@ def listen(request):
 		while True:
 		# Read a line and convert it from b'xxx\r\n' to xxx
 			try:
+				inLockingCycle = False
 				line = ser.readline().decode('utf-8')[:-2]
 				if line and line[0:5] != 'DEBUG' and len(line) == 19:
 					print(line)
-					print (len(line))
+					break
+				elif line[0:10] == "SENSOR_ERR":
+					print(line)
+					inLockingCycle = True
 					break
 			except Exception, e:
 				print e
 			
-	 
-		id_status = l.User.objects.raw("select * from lock_user where uid = '" + line + "'")
+	 	if not inLockingCycle:
+			id_status = l.User.objects.raw("select * from lock_user where uid = '" + line + "'")
 
-		if len(list(id_status)) == 0:
-			line = '*'
-		valid = '2'
-		'''Is a valid user'''
-		rack_status = l.Rack.objects.raw("select * from lock_rack")
-		if len(list(rack_status)) == 0:
-			'''no one is assigned to this lock'''
-			print("rack is locked by: " + line)
-			R = l.Rack(status="occupied", uid=line)
-			R.save()
-			valid = '0'
-		else:
-			'''someone is assigned to the lock verify based on shared and current id's'''
-			rack_status = l.Rack.objects.raw("select id, uid from lock_rack")[0]
-			share_status = l.Share.objects.raw("select * from lock_share where (assoc_uid = '" + line + "' and uid = '" + rack_status.uid + "') or (assoc_uid = '" + rack_status.uid + "' and uid = '" + line + "') and status = 'shared'")
-			if rack_status.uid == line or len(list(share_status)) > 0:
-				if len(list(share_status)) > 0:
-					print("rack is unlocked by shared ID: " + line)
-				else:
-					print("rack is unlocked by ID: " + line)
-				'''correct uid is used to unlock delete any data on rack'''
-				print ("deleteing statuses from rack database")
-				l.Rack.objects.all().delete()
-				valid = '1'
+			if len(list(id_status)) == 0:
+				line = '*'
+			valid = '2'
+			'''Is a valid user'''
+			rack_status = l.Rack.objects.raw("select * from lock_rack")
+			if len(list(rack_status)) == 0:
+				'''no one is assigned to this lock'''
+				print("rack is locked by: " + line)
+				R = l.Rack(status="occupied", uid=line)
+				R.save()
+				valid = '0'
 			else:
-				print("invalid id card")
+				'''someone is assigned to the lock verify based on shared and current id's'''
+				rack_status = l.Rack.objects.raw("select id, uid from lock_rack")[0]
+				share_status = l.Share.objects.raw("select * from lock_share where (assoc_uid = '" + line + "' and uid = '" + rack_status.uid + "') or (assoc_uid = '" + rack_status.uid + "' and uid = '" + line + "') and status = 'shared'")
+				if rack_status.uid == line or len(list(share_status)) > 0:
+					if len(list(share_status)) > 0:
+						print("rack is unlocked by shared ID: " + line)
+					else:
+						print("rack is unlocked by ID: " + line)
+					'''correct uid is used to unlock delete any data on rack'''
+					print ("deleteing statuses from rack database")
+					l.Rack.objects.all().delete()
+					valid = '1'
+				else:
+					print("invalid id card")
 
-		print valid
-		template = loader.get_template('index.html')
-	 	
-		# ser = Serial('/dev/tty.usbmodem411', 115200, timeout=1)
-		# print("connected to: " + ser.portstr)
-		ser.write(valid)
+			print valid
+			template = loader.get_template('index.html')
+		 	
+			# ser = Serial('/dev/tty.usbmodem411', 115200, timeout=1)
+			# print("connected to: " + ser.portstr)
+			ser.write(valid)
+		else:
+			print ("SENSOR_ERR: deleteing statuses from rack database")
+			l.Rack.objects.all().delete()
+			template = loader.get_template('index.html')
 
 	if SERVER_STARTED == False:
 		context = Context({
