@@ -170,8 +170,7 @@ void loop(void) {
 //          Serial.println("You have successfully locked your bike!");
           }
         }
-       
-        if (fromFrontBuffer[0] == 1)
+        else if (fromFrontBuffer[0] == 1)
         {
           stepper.step(-MAXSTEPS);
           digitalWrite(led13, HIGH);   // turn the LED on (HIGH is the voltage level)
@@ -180,6 +179,7 @@ void loop(void) {
           
           digitalWrite(led12, LOW);  // turn off occupied FLAG
         }    
+        
       }
       // Wait a bit before reading the card again
       delay(1000);

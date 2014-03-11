@@ -111,10 +111,10 @@ def listen(request):
 			SERVER_STARTED = False
 
 	while SERVER_STARTED:
+		inLockingCycle = False
 		while True:
 		# Read a line and convert it from b'xxx\r\n' to xxx
 			try:
-				inLockingCycle = False
 				line = ser.readline().decode('utf-8')[:-2]
 				if line and line[0:5] != 'DEBUG' and len(line) == 19:
 					print(line)
@@ -125,7 +125,7 @@ def listen(request):
 					break
 			except Exception, e:
 				print e
-			
+		print "inLockingCycle" + str(inLockingCycle)
 	 	if not inLockingCycle:
 			id_status = l.User.objects.raw("select * from lock_user where uid = '" + line + "'")
 
