@@ -39,14 +39,16 @@
 
 #define IRQ   (2)
 #define RESET (3)  // Not connected by default on the NFC Shield
-#define STEPS 15
-#define MAXSTEPS 75
+#define STEPS 20
+#define MAXSTEPS 140
 
 
 Adafruit_NFCShield_I2C nfc(IRQ, RESET);
 
 int led13 = 13;
 int led12 = 12;
+int led6 = 6;
+int led7 = 7;
 
 boolean occupied = false;
 boolean isInputComplete = false;
@@ -60,8 +62,9 @@ uint8_t currUid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned U
 void setup(void) {
   pinMode(led13, OUTPUT);
   pinMode(led12, OUTPUT);
+  pinMode(led6, OUTPUT);
   Serial.begin(115200);
-  stepper.setSpeed(30);
+  stepper.setSpeed(50);
   readNFC = false;
   isInputComplete = false;
   //  Serial.println("Hello!");
@@ -144,15 +147,18 @@ void loop(void) {
       
       if (fromFrontBuffer[0] != -1)
       {
+        
         if (fromFrontBuffer[0] == 0) {
+          digitalWrite(led6, HIGH);
           int sensorVal = 0;
           int currStep = 0;
           boolean isLocked = false;
           
           while (!isLocked) {
             currStep += STEPS;
-            sensorVal = analogRead(0);
-            if (sensorVal > 400) {
+            sensorVal = digitalRead(led7);
+            delay(100);
+            if (sensorVal == 1) {
               //Reverse and let the database know
               Serial.println("SENSOR_ERR");
               stepper.step(-currStep);
@@ -162,24 +168,25 @@ void loop(void) {
             if (MAXSTEPS == currStep) {
               isLocked = true;
             }
-            delay(100);
           }
           
           if (isLocked) {
+             digitalWrite(led6, LOW);
              digitalWrite(led12, HIGH); // turn on occupied FLAG
 //          Serial.println("You have successfully locked your bike!");
           }
         }
+       
         else if (fromFrontBuffer[0] == 1)
         {
+          digitalWrite(led6, HIGH);
           stepper.step(-MAXSTEPS);
           digitalWrite(led13, HIGH);   // turn the LED on (HIGH is the voltage level)
-          delay(1000);               // wait for a second
+          delay(2000);               // wait for a second
           digitalWrite(led13, LOW); 
-          
+          digitalWrite(led6, LOW);
           digitalWrite(led12, LOW);  // turn off occupied FLAG
         }    
-        
       }
       // Wait a bit before reading the card again
       delay(1000);

@@ -36,16 +36,33 @@
 		<br>
 		<div class="modify">
 			<h3>Add user to share with</h3>
-			<form class="form-horizontal" action="/share/" method="post" style="margin-top: -30px">{% csrf_token %}
+			<ul class="nav nav-list">
+				<li class="divider"></li>
+			</ul>
+			<form class="form-horizontal" action="/share/" method="post" style="margin-top: -30px; max-width: 730px;">{% csrf_token %}
 				{{ form.as_p }}
 				<br></br>
 				<div class="form-group" style="padding-left: 15px">
 					<label class="sr-only" for="shareID">SharedID</label>
 					<input type="text" name="shareID" class="form-control" placeholder="User ID">
 				</div>
+				<h5>Preferences</h5>
 				<div class="form-group" style="padding-left: 15px">
 					<label class="sr-only" for="time">Number of Uses</label>
 					<input type="text" name="time" class="form-control" placeholder="Number of Uses">
+				</div>
+				<div class="form-group" style="padding-left: 15px">
+					<label class="sr-only" for="time">Time Limit</label>
+					<input type="text" name="timeLimit" class="form-control" placeholder="Time Limit">
+					<div class="input-group-btn">
+				        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="margin-top: -34px; margin-left: 667px;">Select <span class="caret"></span></button>
+				        <ul class="dropdown-menu" style="margin-left: 667px;">
+				          <li><a href="#">Hours</a></li>
+				          <li><a href="#">Days</a></li>
+				          <li><a href="#">Unlimited</a></li>
+				        </ul>
+				         <input type="hidden" name="category" class="category">
+				      </div><!-- /btn-group -->
 				</div>
 				<label for="mySubmit" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Add User</label>
     			<input id="mySubmit" type="submit" value="Go" class="hidden" />
