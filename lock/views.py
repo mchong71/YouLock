@@ -5,6 +5,7 @@ import json as simplejson
 from django.core import serializers
 
 import time
+import datetime	
 from lock import models as l
 
 from serial import Serial
@@ -24,12 +25,13 @@ def index(request):
 		# Context is a normal Python dictionary whose keys can be accessed in the template index.html
 		return HttpResponse(template.render(context))
 	else:
-		users = l.User.objects.raw("select u.id, u.uid, u.first_name, s.status from lock_user u join lock_status s on s.uid = u.uid")
+		users = l.User.objects.raw("select u.id, u.uid, u.first_name, u.timestamp s.status from lock_user u join lock_status s on s.uid = u.uid")
 		count = l.User.objects.raw("select count(id) as count, id from lock_user where uid in (select s.assoc_uid from lock_user u join lock_share s on s.uid = u.uid where u.username = '" + request.session['0'] + "')")
 		currUser = l.User.objects.raw("select * from lock_user where username = '" + request.session['0'] + "'")
 		
 		notifications = l.User.objects.raw("select * from lock_share where assoc_uid = '" + currUser[0].uid + "' and status = 'pending'")
 		shareID = l.User.objects.raw("select * from lock_user join lock_share on lock_user.uid = lock_share.uid where lock_share.assoc_uid = '" + currUser[0].uid + "'")
+	
 		if len(list(notifications)) > 0:
 			hasNotifications = 'enabled'
 			shareUser = shareID[0].username
@@ -47,13 +49,15 @@ def index(request):
 				'username': request.session['0'],
 				'givenAccess': givenAccess,
 				'hasNotifications': hasNotifications,
-				'shareUser': shareUser
+				'shareUser': shareUser,
+				'timestamp': currUser[0].timestamp
 			})
 		else:
 			context = Context({
 				'username': request.session['0'],
 				'hasNotifications': hasNotifications,
-				'shareUser': shareUser
+				'shareUser': shareUser,
+				'timestamp': currUser[0].timestamp
 			})
 		template = loader.get_template('index.html')
 		# print "user"
@@ -67,7 +71,15 @@ def share(request):
 		print request.POST
 		username = str(request.session['0'])
 		assocUser = str(request.POST.get('shareID'))
-		time = str(request.POST.get('time'))
+		uses = str(request.POST.get('time'))
+		timeLimit = str(request.POST.get('timeLimit'))
+		type = str(request.POST.get('type'))
+		time = ''
+		if uses == '':
+			time = timeLimit + ' ' + type 
+		else:
+			time = uses
+
 		print username
 		print assocUser
 		print time
@@ -137,7 +149,11 @@ def listen(request):
 			if len(list(rack_status)) == 0:
 				'''no one is assigned to this lock'''
 				print("rack is locked by: " + line)
-				R = l.Rack(status="occupied", uid=line)
+				ts = time.time()
+				st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+				# l.User.objects.raw("update lock_user set timestamp = '" + st + "' where uid = '" + line + "'")
+				l.User.objects.filter(uid=line).update(timestamp=st)
+				R = l.Rack(status="occupied", uid=line, timestamp=st)
 				R.save()
 				valid = '0'
 			else:

@@ -34,124 +34,134 @@
 	</div>
 	<div class="shareBox">
 		<br>
-		<div class="modify">
-			<h3>Add user to share with</h3>
-			<ul class="nav nav-list">
-				<li class="divider"></li>
-			</ul>
-			<form class="form-horizontal" action="/share/" method="post" style="margin-top: -30px; max-width: 730px;">{% csrf_token %}
-				{{ form.as_p }}
-				<br></br>
-				<div class="form-group" style="padding-left: 15px">
-					<label class="sr-only" for="shareID">SharedID</label>
-					<input type="text" name="shareID" class="form-control" placeholder="User ID">
-				</div>
-				<h5>Preferences</h5>
-				<div class="form-group" style="padding-left: 15px">
-					<label class="sr-only" for="time">Number of Uses</label>
-					<input type="text" name="time" class="form-control" placeholder="Number of Uses">
-				</div>
-				<div class="form-group" style="padding-left: 15px">
-					<label class="sr-only" for="time">Time Limit</label>
-					<input type="text" name="timeLimit" class="form-control" placeholder="Time Limit">
-					<div class="input-group-btn">
-				        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="margin-top: -34px; margin-left: 667px;">Select <span class="caret"></span></button>
-				        <ul class="dropdown-menu" style="margin-left: 667px;">
-				          <li><a href="#">Hours</a></li>
-				          <li><a href="#">Days</a></li>
-				          <li><a href="#">Unlimited</a></li>
-				        </ul>
-				         <input type="hidden" name="category" class="category">
-				      </div><!-- /btn-group -->
-				</div>
-				<label for="mySubmit" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Add User</label>
-    			<input id="mySubmit" type="submit" value="Go" class="hidden" />
-			</form>  
-		</div>
-		<br></br>
-		<div class="details">
-			{% if givenAccess %}
-			<h4>People I've shared with: </h4>
-			<table class="table">
-					<thead>
-						<tr>
-							<th></th>
-							<th>User</th>
-							<th>Status</th>
-							<th>Usage Left</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for user in givenAccess %}
-						<tr>
-							<td>
-								<form class="form-horizontal" action="/delete/" method="post">
+		<div class="row">
+			<div class="col-sm-10 col-md-5">
+				<h3>Dashboard</h3><br>
+				Bike:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="form-inline" id="disabledInput" type="text" placeholder="FELT TK3" disabled><br></br>
+				Last locked:&nbsp;&nbsp;&nbsp;&nbsp;
+				<input class="form-inline" id="disabledInput" type="text" placeholder="{{ timestamp }}" disabled>
+
+				<div class="details">
+					{% if givenAccess %}
+					<br>
+					People I've shared with:
+					<table class="table">
+							<thead>
+								<tr>
+									<th></th>
+									<th>User</th>
+									<th>Status</th>
+									<th>Remaining Usage</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for user in givenAccess %}
+								<tr>
+									<td>
+										<form class="form-horizontal" action="/delete/" method="post">
+											<input type="hidden" name="username" value="{{ user.username }}"/>
+										    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i></label>
+					    					<input id="delete" type="submit" value="Delete" class="hidden" /> 
+				    					</form>
+				    				</td>
+									<td>{{ user.username }}</td>
+									<td>{{ user.status }}</td>
+									<td>{{ user.time }}</td>
+		<!-- 							<td>{{ user.status }}</td> -->
+									
+								</tr>
+								{% endfor %}	
+							</tbody>
+						<!-- <form class="form-horizontal" action="/delete/" method="post">
+							<ul style="list-style-type: none; margin-left: -40px">
+								{% for user in givenAccess %}
+								<li>
+									{{ user.username }}
 									<input type="hidden" name="username" value="{{ user.username }}"/>
 								    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
-			    					<input id="delete" type="submit" value="Delete" class="hidden" /> 
-		    					</form>
-		    				</td>
-							<td>{{ user.username }}</td>
-							<td>{{ user.status }}</td>
-							<td>{{ user.time }}</td>
-<!-- 							<td>{{ user.status }}</td> -->
-							
-						</tr>
-						{% endfor %}	
-					</tbody>
-				<!-- <form class="form-horizontal" action="/delete/" method="post">
-					<ul style="list-style-type: none; margin-left: -40px">
-						{% for user in givenAccess %}
-						<li>
-							{{ user.username }}
-							<input type="hidden" name="username" value="{{ user.username }}"/>
-						    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
-	    					<input id="delete" type="submit" value="Delete" class="hidden" />  
-						</li>
-						{% endfor %}
+			    					<input id="delete" type="submit" value="Delete" class="hidden" />  
+								</li>
+								{% endfor %}
+							</ul>
+						</form> -->
+					</table>
+					{% endif %}
+					{% if receievedAccess %}
+					<h4>People that have shared with me: </h4>
+					<table class="table">
+							<thead>
+								<tr>
+									<th>User</th>
+									<th>Status</th>
+									<th>Usage Left</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for user in receivedAccess %}
+								<tr>
+									<td>{{ user.username }}</td>
+									<td>**STATUS**</td>
+									<td>**USAGE**</td>
+		<!-- 							<td>{{ user.status }}</td> -->
+								</tr>
+								{% endfor %}	
+							</tbody>
+						<!-- <form class="form-horizontal" action="/delete/" method="post">
+							<ul style="list-style-type: none; margin-left: -40px">
+								{% for user in givenAccess %}
+								<li>
+									{{ user.username }}
+									<input type="hidden" name="username" value="{{ user.username }}"/>
+								    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
+			    					<input id="delete" type="submit" value="Delete" class="hidden" />  
+								</li>
+								{% endfor %}
+							</ul>
+						</form> -->
+					</table>
+					{% endif %}
+				</div>
+			</div>
+			<div class="col-sm-12 col-md-3">
+				<br></br><br>
+				<div class="modify">
+					<h5>Add user to share with</h5>
+					<ul class="nav nav-list">
+						<li class="divider"></li>
 					</ul>
-				</form> -->
-			</table>
-			{% endif %}
-			{% if receievedAccess %}
-			<h4>People that have shared with me: </h4>
-			<table class="table">
-					<thead>
-						<tr>
-							<th>User</th>
-							<th>Status</th>
-							<th>Usage Left</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for user in receivedAccess %}
-						<tr>
-							<td>{{ user.username }}</td>
-							<td>**STATUS**</td>
-							<td>**USAGE**</td>
-<!-- 							<td>{{ user.status }}</td> -->
-						</tr>
-						{% endfor %}	
-					</tbody>
-				<!-- <form class="form-horizontal" action="/delete/" method="post">
-					<ul style="list-style-type: none; margin-left: -40px">
-						{% for user in givenAccess %}
-						<li>
-							{{ user.username }}
-							<input type="hidden" name="username" value="{{ user.username }}"/>
-						    <label for="delete" class="btn btn-danger btn-sm"><i class="glyphicon glyphicon-remove"></i> Delete User</label>
-	    					<input id="delete" type="submit" value="Delete" class="hidden" />  
-						</li>
-						{% endfor %}
-					</ul>
-				</form> -->
-			</table>
-			{% endif %}
+					<form class="form-horizontal" action="/share/" method="post" style="margin-top: -30px; max-width: 730px;">{% csrf_token %}
+						{{ form.as_p }}
+						<br></br>
+						<div class="form-group" style="padding-left: 15px">
+							<label class="sr-only" for="shareID">SharedID</label>
+							<input type="text" name="shareID" class="form-control" placeholder="User ID">
+						</div>
+						Preferences
+						<div class="form-group" style="padding-left: 15px">
+							<label class="sr-only" for="time">Number of Uses</label>
+							<input type="text" name="time" class="form-control" placeholder="Number of Uses">
+						</div>
+						<div class="form-group" style="padding-left: 15px">
+							<label class="sr-only" for="time">Time Limit</label>
+							<input type="text" name="timeLimit" class="form-control" placeholder="Time Limit">
+							<div class="input-group-btn">
+						        <button type="button" class="btn btn-default dropdown-toggle" id="timeLabel" data-toggle="dropdown" style="width: 80px; margin-top: -34px; margin-left: 198px;">Select <span class="caret"></span></button>
+						        <ul class="dropdown-menu" style="margin-left: 198px;">
+						          <li><a href="#">Hours</a></li>
+						          <li><a href="#">Days</a></li>
+						          <li><a href="#">Unlimited</a></li>
+						        </ul>
+						         <input type="hidden" name="type" class="type" value="test">
+						      </div><!-- /btn-group -->
+						</div>
+						<label for="mySubmit" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Add User</label>
+		    			<input id="mySubmit" type="submit" value="Go" class="hidden" />
+					</form>  
+				</div>
+			</div>
 		</div>
+		<br></br>
 	</div>
-
-	<br></br>
-
 	<div class="row">
 		<span class="span3" style="position: absolute; margin-left: -15px">
 			<h4> <img src="../static/img/gmaps.png">  Closest Locations </h4>
@@ -220,4 +230,12 @@
      
 
 </body>
+<script>
+$('.dropdown-menu a').click( function () {
+    var text = $(this).text();
+    $('#timeLabel').text(text);
+    $('.type').val(text);
+    console.log(text);
+});
+</script>
 </html>

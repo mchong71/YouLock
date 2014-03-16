@@ -7,6 +7,7 @@ class User(models.Model):
 	username = models.CharField(max_length=50)
 	first_name = models.CharField(max_length=50)
 	last_name = models.CharField(max_length=50)
+	timestamp = models.CharField(max_length=50, unique=True)
 	
 	def __unicode__(self):
 		return u'%s %s %s %s' % (self.uid, self.username, self.first_name, self.last_name)
@@ -15,9 +16,10 @@ class Rack(models.Model):
 	'''shows the status of the user as well as any associated ids'''
 	status =  models.CharField(max_length=10)
 	uid = models.CharField(max_length=50, unique=True)
+	timestamp = models.CharField(max_length=50, unique=True)
 
 	def __unicode__(self):
-		return u'%s %s %s' % (self.status, self.uid)
+		return u'%s %s %s' % (self.status, self.uid, self.timestamp)
 
 class Share(models.Model):
 	'''only has entries if there is a shared id'''
